@@ -14,7 +14,7 @@ export default factories.createCoreController('api::movie.movie', ({ strapi }) =
             "https://api.themoviedb.org/3/search/movie",
             {
                 params: {
-                    api_key: "fb87059a19198a25d2e02e1c7d8052dc",
+                    api_key: process.env.TMDB_API_KEY,
                     query: name
                 }
             }
