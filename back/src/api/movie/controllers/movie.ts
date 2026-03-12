@@ -46,18 +46,19 @@ export default factories.createCoreController('api::movie.movie', ({ strapi }) =
 
     async import(ctx) {
         const { name } = (ctx.request as any).body;
+        strapi.log.info(`--- CUSTOM IMPORT ATTEMPT: "${name}" ---`);
 
         if (!name) {
             return ctx.badRequest("Movie name is required");
         }
 
         const user = ctx.state.user;
-
         if (!user) {
+            strapi.log.warn(`Import failed: User not authenticated`);
             return ctx.unauthorized("You must be logged in to import movies");
         }
 
-        strapi.log.info(`--- Movie Import Started: "${name}" ---`);
+        strapi.log.info(`Authenticated User ID: ${user.id}`);
         strapi.log.info(`Using TMDB_API_KEY: ${process.env.TMDB_API_KEY ? 'Present' : 'MISSING'}`);
 
         try {
