@@ -57,37 +57,55 @@ export default factories.createCoreController('api::movie.movie', ({ strapi }) =
             return ctx.unauthorized("You must be logged in to import movies");
         }
 
-        const res = await axios.get(
-            "https://api.themoviedb.org/3/search/movie",
-            {
-                params: {
-                    api_key: process.env.TMDB_API_KEY,
-                    query: name
+        strapi.log.info(`--- Movie Import Started: "${name}" ---`);
+        strapi.log.info(`Using TMDB_API_KEY: ${process.env.TMDB_API_KEY ? 'Present' : 'MISSING'}`);
+
+        try {
+            const res = await axios.get(
+                "https://api.themoviedb.org/3/search/movie",
+                {
+                    params: {
+                        api_key: process.env.TMDB_API_KEY,
+                        query: name
+                    }
                 }
+            );
+
+            strapi.log.info(`TMDB Response Status: ${res.status}`);
+
+            const movie = res.data.results?.[0];
+
+            if (!movie) {
+                strapi.log.warn(`No movie found for name: "${name}"`);
+                return ctx.badRequest("Movie not found on TMDB");
             }
-        );
 
-        const movie = res.data.results[0];
+            strapi.log.info(`Found movie: "${movie.title}" (ID: ${movie.id})`);
 
-        if (!movie) {
-            return ctx.badRequest("Movie not found");
+            const createdMovie = await strapi.entityService.create(
+                "api::movie.movie",
+                {
+                    data: {
+                        title: movie.title,
+                        tmdbId: movie.id,
+                        rating: movie.vote_average,
+                        watched: false,
+                        posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
+                        user: user.id || user.documentId,
+                        publishedAt: new Date(),
+                    }
+                }
+            );
+
+            strapi.log.info(`Successfully created movie in database: ${createdMovie.id}`);
+            return createdMovie;
+
+        } catch (err: any) {
+            strapi.log.error(`Error importing movie from TMDB: ${err.message}`);
+            if (err.response) {
+                strapi.log.error(`TMDB Error Details: ${JSON.stringify(err.response.data)}`);
+            }
+            return ctx.internalServerError(`Failed to import movie: ${err.message}`);
         }
-
-        const createdMovie = await strapi.entityService.create(
-            "api::movie.movie",
-            {
-                data: {
-                    title: movie.title,
-                    tmdbId: movie.id,
-                    rating: movie.vote_average,
-                    watched: false,
-                    posterUrl: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
-                    user: user.id,
-                    publishedAt: new Date(),
-                }
-            }
-        );
-
-        return createdMovie;
     }
 }));
