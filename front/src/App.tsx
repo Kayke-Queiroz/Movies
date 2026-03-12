@@ -22,7 +22,9 @@ interface StrapiMovie {
   posterUrl: string;
 }
 
-const API_URL = 'http://localhost:1337';
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+  ? 'http://localhost:1337' 
+  : 'https://back-0fdbd3b1b5.strapi.cloud';
 
 function App() {
   const [token, setToken] = useState<string | null>(() => {
