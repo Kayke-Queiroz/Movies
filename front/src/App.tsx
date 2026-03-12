@@ -24,7 +24,7 @@ interface StrapiMovie {
 
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
   ? 'http://localhost:1337' 
-  : 'https://back-0fdbd3b1b5.strapi.cloud';
+  : 'https://faithful-appliance-1a21353752.strapiapp.com';
 
 function App() {
   const [token, setToken] = useState<string | null>(() => {
