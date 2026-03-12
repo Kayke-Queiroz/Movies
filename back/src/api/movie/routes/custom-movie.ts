@@ -3,10 +3,7 @@ export default {
         {
             method: "POST",
             path: "/movies/import",
-            handler: "movie.import",
-            config: {
-                auth: false
-            }
+            handler: "movie.import"
         }
     ]
 };
